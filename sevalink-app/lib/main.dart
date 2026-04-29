@@ -1,121 +1,145 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'SevaLink',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: UserScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class UserScreen extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _UserScreenState createState() => _UserScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _UserScreenState extends State<UserScreen> {
+  // Use 10.0.2.2 for Android Emulator, localhost for iOS, or your IP for real devices
+  final String baseUrl = 'http://10.0.2.2:8080/api/test-users';
+  List testUsers = [];
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  @override
+  void initState() {
+    super.initState();
+    fetchTestUsers();
+  }
+
+  Future<void> fetchTestUsers() async {
+    try {
+      final response = await http.get(Uri.parse(baseUrl));
+      if (response.statusCode == 200) {
+        setState(() => testUsers = json.decode(response.body));
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<void> saveUser(String name, String email, {int? id}) async {
+    try {
+      final isEditing = id != null;
+      final url = isEditing ? '$baseUrl/$id' : baseUrl;
+      final response = await (isEditing
+          ? http.put(Uri.parse(url),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({'name': name, 'email': email}))
+          : http.post(Uri.parse(url),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({'name': name, 'email': email})));
+
+      if (response.statusCode == 200) fetchTestUsers();
+    } catch (e) {
+      print('Error saving user: $e');
+    }
+  }
+
+  Future<void> deleteTestUser(int id) async {
+    try {
+      await http.delete(Uri.parse('$baseUrl/$id'));
+      fetchTestUsers();
+    } catch (e) {
+      print('Error deleting user: $e');
+    }
+  }
+
+  void showUserDialog({Map? user}) {
+    TextEditingController nameCtrl = TextEditingController(text: user?['name']);
+    TextEditingController emailCtrl = TextEditingController(
+        text: user?['email']);
+
+    showDialog(
+      context: context,
+      builder: (context) =>
+          AlertDialog(
+            title: Text(user == null ? 'Add New User' : 'Edit User'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(controller: nameCtrl,
+                    decoration: InputDecoration(hintText: 'Name')),
+                TextField(controller: emailCtrl,
+                    decoration: InputDecoration(hintText: 'Email')),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context),
+                  child: Text('Cancel')),
+              ElevatedButton(
+                onPressed: () {
+                  saveUser(nameCtrl.text, emailCtrl.text, id: user?['id']);
+                  Navigator.pop(context);
+                },
+                child: Text('Save'),
+              ),
+            ],
+          ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+      appBar: AppBar(title: Text('SevaLink Users')),
+      body: testUsers.isEmpty
+          ? Center(child: Text('No users found'))
+          : ListView.builder(
+        itemCount: testUsers.length,
+        itemBuilder: (context, index) {
+          final user = testUsers[index];
+          return Card(
+            margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            child: ListTile(
+              title: Text(user['name'] ?? ''),
+              subtitle: Text(user['email'] ?? ''),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit, color: Colors.blue),
+                    onPressed: () => showUserDialog(user: user),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => deleteTestUser(user['id']),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        onPressed: () => showUserDialog(),
+        child: Icon(Icons.add),
       ),
     );
   }
