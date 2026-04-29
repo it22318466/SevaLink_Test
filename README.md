@@ -25,7 +25,7 @@ flutter run
 ### Admin Panel
 
 cd sevalink-admin
-npm start
+npm run dev
 
 ## Requirements
 
