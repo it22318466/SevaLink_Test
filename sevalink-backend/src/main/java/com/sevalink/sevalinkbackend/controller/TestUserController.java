@@ -10,7 +10,7 @@ import tools.jackson.databind.node.LongNode;
 import java.util.List;
 @RestController
 @RequestMapping("api/test-users")
-@CrossOrigin(origins = "*")
+
 public class TestUserController {
     @Autowired
     private TestUserRepository testUserRepository;
