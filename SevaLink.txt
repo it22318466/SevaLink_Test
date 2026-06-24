@@ -1,0 +1,13 @@
+localhost:8080
+http://localhost:8080/api/test-users
+http://localhost:5173
+http://localhost:8080/health
+http://localhost:8080/api/jobs
+http://localhost:8080/api/job-posts
+http://localhost:8080/api/jobs
+http://localhost:8080/api/jobs
+http://localhost:8080/api/job-posts
+http://localhost:8080/api
+http://localhost:8080/api/
+http://localhost:8080/api/jobs
+http://localhost:8080/api/job-posts
