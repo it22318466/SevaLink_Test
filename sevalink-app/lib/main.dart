@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -23,13 +24,24 @@ class UserScreen extends StatefulWidget {
 }
 
 class _UserScreenState extends State<UserScreen> {
-  // Use 10.0.2.2 for Android Emulator, localhost for iOS, or your IP for real devices
-  final String baseUrl = 'http://10.0.2.2:8080/api/test-users';
+  late String baseUrl;
+
+  String getBaseUrl() {
+    if (kIsWeb) {
+      // Web: use localhost
+      return 'http://localhost:8080/api/test-users';
+    } else {
+      // Mobile (Android): use special emulator address
+      return 'http://10.0.2.2:8080/api/test-users';
+    }
+  }
+
   List testUsers = [];
 
   @override
   void initState() {
     super.initState();
+    baseUrl = getBaseUrl();
     fetchTestUsers();
   }
 

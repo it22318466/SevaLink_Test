@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/jobs")
+@RequestMapping({"/api/jobs", "/api/job-posts"})
 @CrossOrigin(origins = "*")
 public class JobPostController {
 
