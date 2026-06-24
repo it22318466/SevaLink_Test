@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/api/jobs", "/api/job-posts"})
+@RequestMapping("/api/jobs")
 @CrossOrigin(origins = "*")
 public class JobPostController {
 
@@ -29,7 +29,7 @@ public class JobPostController {
     }
 
     // Worker sees all open jobs
-    // GET http://localhost:8080/api/jobs
+    // GET http://localhost:8080/api/jobs or http://localhost:8080/api/job-posts
     @GetMapping
     public List<JobPost> getAllOpenJobs() {
         return jobPostService.getAllOpenJobs();

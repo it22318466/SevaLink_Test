@@ -26,6 +26,11 @@ public class HomeController {
         return response;
     }
 
+    @GetMapping({"/api", "/api/"})
+    public Map<String, Object> apiRoot() {
+        return home();
+    }
+
     @GetMapping("/health")
     public Map<String, String> health() {
         Map<String, String> response = new HashMap<>();
